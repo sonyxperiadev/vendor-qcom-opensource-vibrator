@@ -38,14 +38,13 @@
 #include <sys/ioctl.h>
 #include <thread>
 
+#include <android-base/file.h>
+
 #include "include/Vibrator.h"
 #ifdef USE_EFFECT_STREAM
 #include "effect.h"
 #endif
 
-extern "C" {
-#include "libsoc_helper.h"
-}
 namespace aidl {
 namespace android {
 namespace hardware {
@@ -71,7 +70,6 @@ InputFFDevice::InputFFDevice()
     const char *INPUT_DIR = "/dev/input/";
     char name[NAME_BUF_SIZE];
     int fd, ret;
-    soc_info_v0_1_t soc;
 
     mVibraFd = INVALID_VALUE;
     mSupportGain = false;
@@ -130,24 +128,20 @@ InputFFDevice::InputFFDevice()
             if (test_bit(FF_GAIN, ffBitmask))
                 mSupportGain = true;
 
-            get_soc_info(&soc);
-            ALOGD("msm CPU SoC ID: %d\n", soc.msm_cpu);
-            switch (soc.msm_cpu) {
-            case MSM_CPU_LAHAINA:
-            case APQ_CPU_LAHAINA:
-            case MSM_CPU_SHIMA:
-            case MSM_CPU_SM8325:
-            case APQ_CPU_SM8325P:
-            case MSM_CPU_TARO:
-            case MSM_CPU_YUPIK:
-            case MSM_CPU_KALAMA:
-                mSupportExternalControl = true;
-                break;
-            default:
-                mSupportExternalControl = false;
-                break;
+            const std::string soc_name_sysfs = "/sys/devices/soc0/machine";
+            std::string soc_name;
+            if (::android::base::ReadFileToString(soc_name_sysfs, &soc_name)) {
+                ALOGD("msm CPU SoC name: %s\n", soc_name.c_str());
+                if (soc_name == "LAHAINA" ||
+                    soc_name == "LAHAINAP" ||
+                    soc_name == "SHIMA" ||
+                    soc_name == "SM8325" ||
+                    soc_name == "SM8325P" ||
+                    soc_name == "TARO" ||
+                    soc_name == "YUPIK" ||
+                    soc_name == "KALAMA")
+                    mSupportExternalControl = true;
             }
-            break;
         }
 
         close(fd);
