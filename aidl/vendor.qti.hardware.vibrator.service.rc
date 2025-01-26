@@ -2,6 +2,9 @@ service vendor.qti.vibrator /vendor/bin/hw/vendor.qti.hardware.vibrator.service
     class hal
     user system
     group system input
+    disabled
 
-on late-init
+on boot
+    wait /sys/class/leds/vibrator/activate
     write /sys/class/leds/vibrator/trigger "transient"
+    start vendor.qti.vibrator
