@@ -142,6 +142,7 @@ InputFFDevice::InputFFDevice()
                     soc_name == "KALAMA")
                     mSupportExternalControl = true;
             }
+            break;
         }
 
         close(fd);
