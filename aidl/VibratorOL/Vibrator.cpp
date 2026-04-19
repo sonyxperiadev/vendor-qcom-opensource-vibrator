@@ -39,15 +39,12 @@
 #include <sys/epoll.h>
 #include <sys/poll.h>
 #include <thread>
+#include <android-base/file.h>
 
 #include "Vibrator.h"
 #ifdef USE_EFFECT_STREAM
 #include "effect.h"
 #endif
-
-extern "C" {
-#include "libsoc_helper.h"
-}
 
 namespace aidl {
 namespace android {
@@ -84,7 +81,6 @@ InputFFDevice::InputFFDevice()
     const char *INPUT_DIR = "/dev/input/";
     char name[NAME_BUF_SIZE];
     int fd, ret;
-    soc_info_v0_1_t soc;
 
     mVibraFd = INVALID_VALUE;
     mSupportGain = false;
@@ -143,17 +139,14 @@ InputFFDevice::InputFFDevice()
             if (test_bit(FF_GAIN, ffBitmask))
                 mSupportGain = true;
 
-            get_soc_info(&soc);
-            ALOGD("msm CPU SoC ID: %d\n", soc.msm_cpu);
-            switch (soc.msm_cpu) {
-            case MSM_CPU_KALAMA:
-            case MSM_CPU_PINEAPPLE:
-            case MSM_CPU_SUN:
-                mSupportExternalControl = true;
-                break;
-            default:
-                mSupportExternalControl = false;
-                break;
+            const std::string soc_name_sysfs = "/sys/devices/soc0/machine";
+            std::string soc_name;
+            if (::android::base::ReadFileToString(soc_name_sysfs, &soc_name)) {
+                ALOGD("msm CPU SoC name: %s\n", soc_name.c_str());
+                if (soc_name == "KALAMA" ||
+                    soc_name == "PINEAPPLE" ||
+                    soc_name == "SUN")
+                    mSupportExternalControl = true;
             }
             break;
         }
