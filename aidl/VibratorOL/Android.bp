@@ -7,12 +7,12 @@ cc_library_shared {
         "VibratorOffload.cpp",
     ],
     shared_libs: [
+        "libbase",
         "libcutils",
         "libutils",
         "liblog",
         "libqtivibratoreffect",
         "libqtivibratoreffectoffload",
-        "libsoc_helper",
         "libbinder_ndk",
         "android.hardware.vibrator-V2-ndk",
     ],
