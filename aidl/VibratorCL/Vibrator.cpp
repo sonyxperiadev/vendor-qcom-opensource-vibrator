@@ -330,7 +330,7 @@ int32_t HapticsSetParameters(uint32_t param_mode, pal_param_haptics_cnfg_t paylo
             memcpy((uint8_t*) hpconf->buffer_ptr,
                 (uint8_t *)&VibratorCL::PcmEffectInfo[GlobaleffectId].data[0], hpconf->buffer_size);
         }
-        ALOGE("%s : size of buffer %d", __func__, sizeof(payload.buffer_ptr));
+        ALOGE("%s : size of buffer %lu", __func__, sizeof(payload.buffer_ptr));
         status =  pal_stream_set_param(pal_stream_handle_, param_mode, param_payload);
 
         break;
@@ -627,7 +627,7 @@ void VibratorCL::composePlayThread(const std::vector<CompositeEffect>& composite
             stop = std::chrono::high_resolution_clock::now();
 
             duration = duration_cast<std::chrono::milliseconds>(stop - start) - std::chrono::milliseconds(COMPOSE_EFFECT_DURATION_INMS);
-            ALOGD("Delay in getting Waveform complete event: %d", duration);
+            ALOGD("Delay in getting Waveform complete event: %lld", duration.count());
         }
     }
 
